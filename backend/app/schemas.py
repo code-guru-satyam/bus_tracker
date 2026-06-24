@@ -54,8 +54,59 @@ class RouteResponse(RouteCreate):
     model_config = ConfigDict(from_attributes=True, str_strip_whitespace=True)
 
     id: int = Field(gt=0)
+    stop_count: int
     created_at: datetime
     updated_at: datetime
+
+
+class RouteStopCreate(SchemaBase):
+    stop_name: ShortText
+    latitude: Decimal = Field(
+        ge=Decimal("-90"),
+        le=Decimal("90"),
+        max_digits=9,
+        decimal_places=6,
+    )
+    longitude: Decimal = Field(
+        ge=Decimal("-180"),
+        le=Decimal("180"),
+        max_digits=9,
+        decimal_places=6,
+    )
+    sequence_number: int = Field(gt=0)
+
+
+class RouteStopUpdate(SchemaBase):
+    stop_name: ShortText | None = None
+    latitude: Decimal | None = Field(
+        default=None,
+        ge=Decimal("-90"),
+        le=Decimal("90"),
+        max_digits=9,
+        decimal_places=6,
+    )
+    longitude: Decimal | None = Field(
+        default=None,
+        ge=Decimal("-180"),
+        le=Decimal("180"),
+        max_digits=9,
+        decimal_places=6,
+    )
+    sequence_number: int | None = Field(default=None, gt=0)
+
+
+class RouteStopResponse(RouteStopCreate):
+    model_config = ConfigDict(from_attributes=True, str_strip_whitespace=True)
+
+    id: int = Field(gt=0)
+    route_id: int = Field(gt=0)
+    created_at: datetime
+    updated_at: datetime
+
+
+class RouteGeometryResponse(SchemaBase):
+    route_id: int = Field(gt=0)
+    coordinates: list[list[float]]
 
 
 class BusCreate(SchemaBase):

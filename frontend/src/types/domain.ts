@@ -5,9 +5,35 @@ export type Route = {
   source: string;
   destination: string;
   description: string | null;
+  stop_count: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type RouteStop = {
+  id: number;
+  route_id: number;
+  stop_name: string;
+  latitude: string;
+  longitude: string;
+  sequence_number: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RouteStopCreate = {
+  stop_name: string;
+  latitude: string;
+  longitude: string;
+  sequence_number: number;
+};
+
+export type RouteStopUpdate = Partial<RouteStopCreate>;
+
+export type RouteGeometry = {
+  route_id: number;
+  coordinates: Array<[number, number]>;
 };
 
 export type Bus = {

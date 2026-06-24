@@ -6,6 +6,7 @@ import type { BusWithLocation } from '../../hooks/useBusLocations';
 
 type BusMarkerProps = {
   item: BusWithLocation;
+  routeMap: Record<number, { name: string; stop_count: number }>;
 };
 
 const busMarkerIcon = L.divIcon({
@@ -22,7 +23,7 @@ function easeOutCubic(progress: number): number {
   return 1 - Math.pow(1 - progress, 3);
 }
 
-export function BusMarker({ item }: BusMarkerProps) {
+export function BusMarker({ item, routeMap }: BusMarkerProps) {
   const animationFrameRef = useRef<number | null>(null);
   const targetPosition = useMemo<[number, number] | null>(() => {
     if (item.location === null || item.coordinateError !== null) {
@@ -101,8 +102,24 @@ export function BusMarker({ item }: BusMarkerProps) {
               <dd>{item.bus.registration_number}</dd>
             </div>
             <div>
-              <dt>Route ID</dt>
-              <dd>{item.bus.route_id ?? '-'}</dd>
+              <dt>Route Name</dt>
+              <dd>
+                {item.bus.route_id != null && routeMap[item.bus.route_id]
+                  ? routeMap[item.bus.route_id].name
+                  : '-'}
+              </dd>
+            </div>
+            <div>
+              <dt>Total Stops</dt>
+              <dd>
+                {item.bus.route_id != null && routeMap[item.bus.route_id]
+                  ? routeMap[item.bus.route_id].stop_count
+                  : '-'}
+              </dd>
+            </div>
+            <div>
+              <dt>Next Stop</dt>
+              <dd>Coming soon</dd>
             </div>
             <div>
               <dt>Speed</dt>

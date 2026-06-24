@@ -51,6 +51,39 @@ class Route(Base):
         back_populates="route",
         cascade="save-update, merge",
     )
+    route_stops: Mapped[list["RouteStop"]] = relationship(
+        back_populates="route",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="RouteStop.sequence_number",
+    )
+
+
+class RouteStop(Base):
+    __tablename__ = "route_stops"
+    __table_args__ = (
+        UniqueConstraint("route_id", "sequence_number", name="uq_route_stops_route_sequence"),
+        Index("ix_route_stops_route_id", "route_id"),
+        Index("ix_route_stops_sequence_number", "sequence_number"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    route_id: Mapped[int] = mapped_column(
+        ForeignKey("routes.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    stop_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    latitude: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
+    longitude: Mapped[Decimal] = mapped_column(Numeric(9, 6), nullable=False)
+    sequence_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    route: Mapped[Route] = relationship(back_populates="route_stops")
 
 
 class Bus(Base):

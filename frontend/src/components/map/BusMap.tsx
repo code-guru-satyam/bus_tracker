@@ -1,10 +1,14 @@
 import { MapContainer, TileLayer } from 'react-leaflet';
 
 import type { BusWithLocation } from '../../hooks/useBusLocations';
+import type { Route } from '../../types/domain';
 import { BusMarker } from './BusMarker';
+import { RoutePolyline } from './RoutePolyline';
 
 type BusMapProps = {
   busesWithLocations: BusWithLocation[];
+  routeMap: Record<number, Pick<Route, 'name' | 'stop_count'>>;
+  routeId: number | null;
   isLoading: boolean;
   error: string | null;
   busesWithoutLocation: number;
@@ -16,6 +20,8 @@ const INITIAL_ZOOM = 7;
 
 export function BusMap({
   busesWithLocations,
+  routeMap,
+  routeId,
   isLoading,
   error,
   busesWithoutLocation,
@@ -60,8 +66,9 @@ export function BusMap({
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+          <RoutePolyline routeId={routeId} />
           {busesWithLocations.map((item) => (
-            <BusMarker key={item.bus.id} item={item} />
+            <BusMarker key={item.bus.id} item={item} routeMap={routeMap} />
           ))}
         </MapContainer>
       </div>

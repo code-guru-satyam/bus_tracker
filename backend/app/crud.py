@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 from sqlalchemy import Select, select
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app import models, schemas
 
@@ -31,12 +31,108 @@ def create_route(db: Session, route: schemas.RouteCreate) -> models.Route:
 
 
 def get_route(db: Session, route_id: int) -> models.Route | None:
-    return db.get(models.Route, route_id)
+    statement = (
+        select(models.Route)
+        .options(selectinload(models.Route.route_stops))
+        .where(models.Route.id == route_id)
+    )
+    return db.scalars(statement).first()
 
 
 def get_routes(db: Session, skip: int = 0, limit: int = 100) -> Sequence[models.Route]:
-    statement = select(models.Route).offset(skip).limit(limit)
+    statement = (
+        select(models.Route)
+        .options(selectinload(models.Route.route_stops))
+        .offset(skip)
+        .limit(limit)
+    )
     return db.scalars(statement).all()
+
+
+def _build_route_response(route: models.Route) -> dict:
+    """Convert Route ORM model to response dict with calculated stop_count."""
+    return {
+        "id": route.id,
+        "route_number": route.route_number,
+        "name": route.name,
+        "source": route.source,
+        "destination": route.destination,
+        "description": route.description,
+        "is_active": route.is_active,
+        "stop_count": len(route.route_stops) if route.route_stops else 0,
+        "created_at": route.created_at,
+        "updated_at": route.updated_at,
+    }
+
+
+def get_route_stops(db: Session, route_id: int) -> Sequence[models.RouteStop]:
+    statement = (
+        select(models.RouteStop)
+        .where(models.RouteStop.route_id == route_id)
+        .order_by(models.RouteStop.sequence_number)
+    )
+    return db.scalars(statement).all()
+
+
+def get_route_stop(db: Session, route_id: int, stop_id: int) -> models.RouteStop | None:
+    statement = (
+        select(models.RouteStop)
+        .where(models.RouteStop.route_id == route_id)
+        .where(models.RouteStop.id == stop_id)
+    )
+    return db.scalars(statement).first()
+
+
+def create_route_stop(
+    db: Session,
+    route_id: int,
+    route_stop: schemas.RouteStopCreate,
+) -> models.RouteStop:
+    if get_route(db=db, route_id=route_id) is None:
+        raise ValueError("Route not found")
+
+    db_route_stop = models.RouteStop(route_id=route_id, **route_stop.model_dump())
+    db.add(db_route_stop)
+    _commit_and_refresh(db, db_route_stop)
+    return db_route_stop
+
+
+def update_route_stop(
+    db: Session,
+    route_id: int,
+    stop_id: int,
+    route_stop_update: schemas.RouteStopUpdate,
+) -> models.RouteStop | None:
+    db_route_stop = get_route_stop(db=db, route_id=route_id, stop_id=stop_id)
+    if db_route_stop is None:
+        return None
+
+    update_data = route_stop_update.model_dump(exclude_unset=True)
+    _apply_updates(db_route_stop, update_data)
+    _commit_and_refresh(db, db_route_stop)
+    return db_route_stop
+
+
+def delete_route_stop(db: Session, route_id: int, stop_id: int) -> bool:
+    db_route_stop = get_route_stop(db=db, route_id=route_id, stop_id=stop_id)
+    if db_route_stop is None:
+        return False
+
+    try:
+        db.delete(db_route_stop)
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise
+    return True
+
+
+def get_route_geometry(db: Session, route_id: int) -> list[list[float]]:
+    if get_route(db=db, route_id=route_id) is None:
+        raise ValueError("Route not found")
+
+    route_stops = get_route_stops(db=db, route_id=route_id)
+    return [[float(stop.latitude), float(stop.longitude)] for stop in route_stops]
 
 
 def update_route(

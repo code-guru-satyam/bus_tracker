@@ -108,10 +108,80 @@ select {
   margin-top: 20px;
 }
 
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  .route-selector {
+    display: grid;
+    gap: 12px;
+    padding: 0 22px 22px;
+  }
+
+  .route-selector label {
+    display: grid;
+    gap: 8px;
+    font-weight: 700;
+    color: #1d232a;
+  }
+
+  .route-selector select,
+  .route-stop-form-card input,
+  .route-stop-form-card button {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid #dce3e8;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font: inherit;
+  }
+
+  .route-stops-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .route-stop-form-card {
+    border: 1px solid #dce3e8;
+    border-radius: 12px;
+    padding: 20px;
+    background: #fafbfc;
+  }
+
+  .route-stop-form-card h3 {
+    margin-top: 0;
+  }
+
+  .route-stop-form-card form {
+    display: grid;
+    gap: 12px;
+  }
+
+  .route-stop-form-card label {
+    display: grid;
+    gap: 8px;
+    font-weight: 700;
+    color: #1d232a;
+  }
+
+  .route-stop-form-card button {
+    cursor: pointer;
+    background: #147d64;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 14px;
+    transition: background 0.15s ease;
+  }
+
+  .route-stop-form-card button:hover {
+    background: #0f6c58;
+  }
+
+  .route-stop-form-card button[type='button'] {
+    background: #ffffff;
+    color: #1d232a;
+    border: 1px solid #dce3e8;
+  }
+
   gap: 16px;
   margin-bottom: 18px;
 }
